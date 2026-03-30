@@ -6,6 +6,9 @@ import {
 } from '@nestjs/common';
 import { PrismaClient } from '@prisma/client';
 import { ConfigService } from '@nestjs/config';
+import { PrismaNeon } from '@prisma/adapter-neon';
+
+
 
 @Injectable()
 export class PrismaService
@@ -15,7 +18,11 @@ export class PrismaService
   private readonly logger = new Logger(PrismaService.name);
 
   constructor(private configService: ConfigService) {
+     const adapter = new PrismaNeon({
+      connectionString: process.env.DATABASE_URL!,
+    });
     super({
+        adapter,
       
       // Log slow queries in development
       log:
