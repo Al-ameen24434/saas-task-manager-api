@@ -8,6 +8,7 @@ import { DatabaseModule } from '@database/database.module';
 import { AuthModule } from '@modules/auth/auth.module';
 import { UsersModule } from '@modules/users/users.module';
 import { JwtAuthGuard } from '@modules/auth/guards/jwt-auth.guard';
+import { OrganizationsModule } from '@modules/organizations/organizations.module';
 
 @Module({
   imports: [
@@ -19,6 +20,7 @@ import { JwtAuthGuard } from '@modules/auth/guards/jwt-auth.guard';
     DatabaseModule,
     AuthModule,
     UsersModule,
+    OrganizationsModule
   ],
   providers: [
     {
