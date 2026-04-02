@@ -81,6 +81,7 @@ model Project {
   status         ProjectStatus @default(ACTIVE)
   organizationId String
   createdById    String
+  isDeleted      Boolean      @default(false)
   startDate      DateTime?
   endDate        DateTime?
   createdAt      DateTime      @default(now())
@@ -91,6 +92,7 @@ model Project {
 
   @@index([organizationId])
   @@index([status])
+ @@index([isDeleted])
   @@map("projects")
 }
 
@@ -102,6 +104,7 @@ model Task {
   priority    TaskPriority   @default(MEDIUM)
   projectId   String
   createdById String
+  isDeleted   Boolean      @default(false)
   dueDate     DateTime?
   position    Int            @default(0)
   createdAt   DateTime       @default(now())
@@ -115,6 +118,7 @@ model Task {
   @@index([projectId])
   @@index([status])
   @@index([priority])
+  @@index([isDeleted])
   @@index([createdById])
   @@map("tasks")
 }
