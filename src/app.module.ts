@@ -10,6 +10,7 @@ import { UsersModule } from '@modules/users/users.module';
 import { JwtAuthGuard } from '@modules/auth/guards/jwt-auth.guard';
 import { OrganizationsModule } from '@modules/organizations/organizations.module';
 import { ProjectsModule } from '@modules/projects/projects.module';
+import { TasksModule } from '@modules/tasks/tasks.module';
 
 @Module({
   imports: [
@@ -23,6 +24,7 @@ import { ProjectsModule } from '@modules/projects/projects.module';
     UsersModule,
     OrganizationsModule,
     ProjectsModule,
+    TasksModule,
   ],
   providers: [
     {
