@@ -534,4 +534,19 @@ export class TasksService {
       ![TaskStatus.DONE, TaskStatus.CANCELLED].includes(task.status);
     return dto;
   }
+
+    /**
+     * Public scope validator used by CommentsService.
+     * Verifies a task belongs to a project.
+     */
+    async assertTaskBelongsToProject(
+    taskId: string,
+    projectId: string,
+    ): Promise<void> {
+    const task = await this.prisma.task.findFirst({
+        where: { id: taskId, projectId, isDeleted: false },
+        select: { id: true },
+    });
+    if (!task) throw new ResourceNotFoundException('Task', taskId);
+    }
 }
