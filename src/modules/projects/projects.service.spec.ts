@@ -1,220 +1,229 @@
-// import { Test, TestingModule } from '@nestjs/testing';
-// import { BadRequestException } from '@nestjs/common';
-// import { ProjectStatus, TaskStatus } from '@prisma/client';
-// import { ProjectsService } from './projects.service';
-// import { PrismaService } from '@database/prisma.service';
-// import { ResourceNotFoundException } from '@common/exceptions/custom.exceptions';
+import { Test, TestingModule } from '@nestjs/testing';
+import { BadRequestException } from '@nestjs/common';
+import { ProjectStatus, TaskStatus } from '@prisma/client';
+import { ProjectsService } from './projects.service';
+import { PrismaService } from '@database/prisma.service';
+import { ResourceNotFoundException } from '@common/exception/custom.exceptions';
+import { expect, jest } from '@jest/globals';
+import { afterEach,describe, beforeEach, it,  } from '@jest/globals';
 
-// describe('ProjectsService', () => {
-//   let service: ProjectsService;
-//   let prisma: jest.Mocked<PrismaService>;
 
-//   const orgId = 'org-uuid-1';
-//   const userId = 'user-uuid-1';
-//   const projectId = 'project-uuid-1';
+describe('ProjectsService', () => {
+  let service: ProjectsService;
+  let prisma: jest.Mocked<PrismaService>;
 
-//   const mockUser = {
-//     id: userId,
-//     email: 'alice@example.com',
-//     password: 'hashed',
-//     firstName: 'Alice',
-//     lastName: 'Johnson',
-//     avatarUrl: null,
-//     isActive: true,
-//     isEmailVerified: true,
-//     createdAt: new Date(),
-//     updatedAt: new Date(),
-//   };
+  const orgId = 'org-uuid-1';
+  const userId = 'user-uuid-1';
+  const projectId = 'project-uuid-1';
 
-//   const mockProject = {
-//     id: projectId,
-//     name: 'Website Redesign',
-//     description: 'Redesign the website',
-//     status: ProjectStatus.ACTIVE,
-//     organizationId: orgId,
-//     createdById: userId,
-//     startDate: null,
-//     endDate: null,
-//     isDeleted: false,
-//     createdAt: new Date(),
-//     updatedAt: new Date(),
-//     createdBy: mockUser,
-//     _count: { tasks: 5 },
-//   };
+  const mockUser = {
+    id: userId,
+    email: 'alice@example.com',
+    password: 'hashed',
+    firstName: 'Alice',
+    lastName: 'Johnson',
+    avatarUrl: null,
+    isActive: true,
+    isEmailVerified: true,
+    createdAt: new Date(),
+    updatedAt: new Date(),
+  };
 
-//   beforeEach(async () => {
-//     const module: TestingModule = await Test.createTestingModule({
-//       providers: [
-//         ProjectsService,
-//         {
-//           provide: PrismaService,
-//           useValue: {
-//             project: {
-//               create: jest.fn(),
-//               findMany: jest.fn(),
-//               findFirst: jest.fn(),
-//               update: jest.fn(),
-//               count: jest.fn(),
-//             },
-//             task: {
-//               groupBy: jest.fn(),
-//               count: jest.fn(),
-//             },
-//             taskAssignee: {
-//               count: jest.fn(),
-//             },
-//           },
-//         },
-//       ],
-//     }).compile();
+  const mockProject = {
+    id: projectId,
+    name: 'Website Redesign',
+    description: 'Redesign the website',
+    status: ProjectStatus.ACTIVE,
+    organizationId: orgId,
+    createdById: userId,
+    startDate: null,
+    endDate: null,
+    isDeleted: false,
+    createdAt: new Date(),
+    updatedAt: new Date(),
+    createdBy: mockUser,
+    _count: { tasks: 5 },
+  };
 
-//     service = module.get<ProjectsService>(ProjectsService);
-//     prisma = module.get(PrismaService);
-//   });
+  beforeEach(async () => {
+    const module: TestingModule = await Test.createTestingModule({
+      providers: [
+        ProjectsService,
+        {
+          provide: PrismaService,
+          useValue: {
+            project: {
+              create: jest.fn(),
+              findMany: jest.fn(),
+              findFirst: jest.fn(),
+              update: jest.fn(),
+              count: jest.fn(),
+            },
+            task: {
+              groupBy: jest.fn(),
+              count: jest.fn(),
+            },
+            taskAssignee: {
+              count: jest.fn(),
+            },
+          },
+        },
+      ],
+    }).compile();
 
-//   afterEach(() => jest.clearAllMocks());
+    service = module.get<ProjectsService>(ProjectsService);
+    prisma = module.get(PrismaService);
+  });
 
-//   // ─── CREATE ──────────────────────────────────────────────────────────────
+  afterEach(() => { jest.clearAllMocks(); });
 
-//   describe('create()', () => {
-//     it('should create a project successfully', async () => {
-//       (prisma.project.create as jest.Mock).mockResolvedValue(mockProject);
+  // ─── CREATE ──────────────────────────────────────────────────────────────
 
-//       const result = await service.create(
-//         orgId,
-//         { name: 'Website Redesign', description: 'Redesign the website' },
-//         userId,
-//       );
+  describe('create()', () => {
+    it('should create a project successfully', async () => {
+      jest.mocked(prisma.project.create).mockResolvedValue(mockProject as any);
 
-//       expect(result.name).toBe('Website Redesign');
-//       expect(result.organizationId).toBe(orgId);
-//       expect(result.createdBy.id).toBe(userId);
-//     });
+      const result = await service.create(
+        orgId,
+        { name: 'Website Redesign', description: 'Redesign the website' },
+        userId,
+      );
 
-//     it('should throw BadRequestException when endDate is before startDate', async () => {
-//       await expect(
-//         service.create(
-//           orgId,
-//           {
-//             name: 'Test',
-//             startDate: '2024-06-01',
-//             endDate: '2024-01-01',  // Before startDate
-//           },
-//           userId,
-//         ),
-//       ).rejects.toThrow(BadRequestException);
-//     });
-//   });
+      expect(result.name).toBe('Website Redesign');
+      expect(result.organizationId).toBe(orgId);
+      expect(result.createdBy.id).toBe(userId);
+    });
 
-//   // ─── FIND ONE ────────────────────────────────────────────────────────────
+    it('should throw BadRequestException when endDate is before startDate', async () => {
+      await expect(
+        service.create(
+          orgId,
+          {
+            name: 'Test',
+            startDate: '2024-06-01',
+            endDate: '2024-01-01',  // Before startDate
+          },
+          userId,
+        ),
+      ).rejects.toThrow(BadRequestException);
+    });
+  });
 
-//   describe('findOne()', () => {
-//     it('should return project with task counts', async () => {
-//       (prisma.project.findFirst as jest.Mock).mockResolvedValue(mockProject);
-//       (prisma.task.groupBy as jest.Mock).mockResolvedValue([
-//         { status: TaskStatus.TODO, _count: { status: 3 } },
-//         { status: TaskStatus.DONE, _count: { status: 2 } },
-//       ]);
+  // ─── FIND ONE ────────────────────────────────────────────────────────────
 
-//       const result = await service.findOne(projectId, orgId);
+  describe('findOne()', () => {
+    it('should return project with task counts', async () => {
+      jest.mocked(prisma.project.findFirst).mockResolvedValue(mockProject as any);
+      jest.mocked(prisma.task.groupBy).mockResolvedValue([
+        { status: TaskStatus.TODO, _count: { status: 3 } },
+        { status: TaskStatus.DONE, _count: { status: 2 } },
+      ] as any);
 
-//       expect(result.id).toBe(projectId);
-//       expect(result.taskCounts?.total).toBe(5);
-//       expect(result.taskCounts?.todo).toBe(3);
-//       expect(result.taskCounts?.done).toBe(2);
-//     });
+      const result = await service.findOne(projectId, orgId);
 
-//     it('should throw ResourceNotFoundException if project not found', async () => {
-//       (prisma.project.findFirst as jest.Mock).mockResolvedValue(null);
+      expect(result.id).toBe(projectId);
+      expect(result.taskCounts?.total).toBe(5);
+      expect(result.taskCounts?.todo).toBe(3);
+      expect(result.taskCounts?.done).toBe(2);
+    });
 
-//       await expect(service.findOne('nonexistent', orgId)).rejects.toThrow(
-//         ResourceNotFoundException,
-//       );
-//     });
+    it('should throw ResourceNotFoundException if project not found', async () => {
+      jest.mocked(prisma.project.findFirst).mockResolvedValue(null);
 
-//     it('should throw if project belongs to a different org', async () => {
-//       // findFirst returns null when orgId doesn't match (WHERE clause filters it out)
-//       (prisma.project.findFirst as jest.Mock).mockResolvedValue(null);
+      await expect(service.findOne('nonexistent', orgId)).rejects.toThrow(
+        ResourceNotFoundException,
+      );
+    });
 
-//       await expect(
-//         service.findOne(projectId, 'different-org-id'),
-//       ).rejects.toThrow(ResourceNotFoundException);
-//     });
-//   });
+    it('should throw if project belongs to a different org', async () => {
+      // findFirst returns null when orgId doesn't match (WHERE clause filters it out)
+      jest.mocked(prisma.project.findFirst).mockResolvedValue(null);
 
-//   // ─── FIND ALL ────────────────────────────────────────────────────────────
+      await expect(
+        service.findOne(projectId, 'different-org-id'),
+      ).rejects.toThrow(ResourceNotFoundException);
+    });
+  });
 
-//   describe('findAll()', () => {
-//     it('should return paginated projects', async () => {
-//       (prisma.project.findMany as jest.Mock).mockResolvedValue([mockProject]);
-//       (prisma.project.count as jest.Mock).mockResolvedValue(1);
+  // ─── FIND ALL ────────────────────────────────────────────────────────────
 
-//       const result = await service.findAll(orgId, {
-//         page: 1,
-//         limit: 10,
-//         skip: 0,
-//       } as any);
+  describe('findAll()', () => {
+    it('should return paginated projects', async () => {
+      jest.mocked(prisma.project.findMany).mockResolvedValue([mockProject] as any);
+      jest.mocked(prisma.project.count).mockResolvedValue(1);
 
-//       expect(result.data).toHaveLength(1);
-//       expect(result.meta).toMatchObject({
-//         total: 1,
-//         page: 1,
-//         limit: 10,
-//         totalPages: 1,
-//         hasNextPage: false,
-//         hasPreviousPage: false,
-//       });
-//     });
+      const result = await service.findAll(orgId, {
+        page: 1,
+        limit: 10,
+        skip: 0,
+      } as any);
 
-//     it('should run count and findMany in parallel', async () => {
-//       (prisma.project.findMany as jest.Mock).mockResolvedValue([]);
-//       (prisma.project.count as jest.Mock).mockResolvedValue(0);
+      expect(result.data).toHaveLength(1);
+      expect(result.meta).toMatchObject({
+        total: 1,
+        page: 1,
+        limit: 10,
+        totalPages: 1,
+        hasNextPage: false,
+        hasPreviousPage: false,
+      });
+    });
 
-//       await service.findAll(orgId, { page: 1, limit: 10, skip: 0 } as any);
+    it('should run count and findMany in parallel', async () => {
+      jest.mocked(prisma.project.findMany).mockResolvedValue([] as any);
+      jest.mocked(prisma.project.count).mockResolvedValue(0);
 
-//       // Both called exactly once — parallel execution
-//       expect(prisma.project.findMany).toHaveBeenCalledTimes(1);
-//       expect(prisma.project.count).toHaveBeenCalledTimes(1);
-//     });
-//   });
+      await service.findAll(orgId, { page: 1, limit: 10, skip: 0 } as any);
 
-//   // ─── STATS ───────────────────────────────────────────────────────────────
+      // Both called exactly once — parallel execution
+      expect(prisma.project.findMany).toHaveBeenCalledTimes(1);
+      expect(prisma.project.count).toHaveBeenCalledTimes(1);
+    });
+  });
 
-//   describe('getStats()', () => {
-//     it('should calculate completion rate correctly', async () => {
-//       (prisma.project.findFirst as jest.Mock).mockResolvedValue(mockProject);
-//       (prisma.task.groupBy as jest.Mock)
-//         .mockResolvedValueOnce([
-//           // tasksByStatus
-//           { status: 'TODO', _count: { status: 3 } },
-//           { status: 'DONE', _count: { status: 7 } },
-//         ])
-//         .mockResolvedValueOnce([
-//           // tasksByPriority
-//           { priority: 'HIGH', _count: { priority: 5 } },
-//           { priority: 'MEDIUM', _count: { priority: 5 } },
-//         ]);
-//       (prisma.taskAssignee.count as jest.Mock).mockResolvedValue(4);
-//       (prisma.task.count as jest.Mock).mockResolvedValue(1); // overdue
+  // ─── STATS ───────────────────────────────────────────────────────────────
 
-//       const stats = await service.getStats(projectId, orgId);
+  describe('getStats()', () => {
+    it('should calculate completion rate correctly', async () => {
+      jest.mocked(prisma.project.findFirst).mockResolvedValue(mockProject as any);
+      (jest.mocked(prisma.task.groupBy) as any)
+        .mockResolvedValueOnce([
+          // tasksByStatus
+          { status: 'TODO', _count: { status: 3 } },
+          { status: 'DONE', _count: { status: 7 } },
+        ])
+        .mockResolvedValueOnce([
+          // tasksByPriority
+          { priority: 'HIGH', _count: { priority: 5 } },
+          { priority: 'MEDIUM', _count: { priority: 5 } },
+        ]);
+      jest.mocked(prisma.taskAssignee.count).mockResolvedValue(4);
+      jest.mocked(prisma.task.count).mockResolvedValue(1); // overdue
 
-//       expect(stats.totalTasks).toBe(10);
-//       expect(stats.completedTasks).toBe(7);
-//       expect(stats.completionRate).toBe(70);
-//       expect(stats.overdueTasksCount).toBe(1);
-//     });
+      const stats = await service.getStats(projectId, orgId);
 
-//     it('should return 0% completion when there are no tasks', async () => {
-//       (prisma.project.findFirst as jest.Mock).mockResolvedValue(mockProject);
-//       (prisma.task.groupBy as jest.Mock).mockResolvedValue([]);
-//       (prisma.taskAssignee.count as jest.Mock).mockResolvedValue(0);
-//       (prisma.task.count as jest.Mock).mockResolvedValue(0);
+      expect(stats.totalTasks).toBe(10);
+      expect(stats.completedTasks).toBe(7);
+      expect(stats.completionRate).toBe(70);
+      expect(stats.overdueTasksCount).toBe(1);
+    });
 
-//       const stats = await service.getStats(projectId, orgId);
+    it('should return 0% completion when there are no tasks', async () => {
+      jest.mocked(prisma.project.findFirst).mockResolvedValue(mockProject as any);
+      jest.mocked(prisma.task.groupBy).mockResolvedValue([] as any);
+      jest.mocked(prisma.taskAssignee.count).mockResolvedValue(0);
+      jest.mocked(prisma.task.count).mockResolvedValue(0);
 
-//       expect(stats.totalTasks).toBe(0);
-//       expect(stats.completionRate).toBe(0); // No division by zero
-//     });
-//   });
-// });
+      const stats = await service.getStats(projectId, orgId);
+
+      expect(stats.totalTasks).toBe(0);
+      expect(stats.completionRate).toBe(0); // No division by zero
+    });
+  });
+});
+
+describe('ProjectsService Placeholder', () => {
+  it('should have a placeholder test', () => {
+    expect(true).toBe(true);
+  });
+});
